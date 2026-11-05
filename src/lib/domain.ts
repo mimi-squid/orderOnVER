@@ -1,0 +1,13 @@
+import {z} from 'zod';
+import type {Status,MenuItem} from '../data/ports';
+export const formatINR=(minor:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:minor%100?2:0}).format(minor/100);
+export const phoneSchema=z.string().regex(/^[6-9]\d{9}$/,'Enter a valid 10-digit mobile number');
+export const passwordSchema=z.string().min(8,'Password needs 8+ characters, a number and a symbol').regex(/\d/,'Add a number').regex(/[^a-zA-Z0-9]/,'Add a symbol');
+export const signupSchema=z.object({name:z.string().min(2,'Enter your full name'),phone:phoneSchema,password:passwordSchema,confirm:z.string(),email:z.union([z.literal(''),z.string().email('Enter a valid email like name@example.com')]),gender:z.string().optional(),captcha:z.literal(true,{errorMap:()=>({message:'Please complete the captcha'})}),terms:z.literal(true,{errorMap:()=>({message:'Please accept the terms'})})}).refine(v=>v.password===v.confirm,{message:"Passwords don't match",path:['confirm']});
+export const nextStatuses:Record<Status,Status[]>={received:['accepted','rejected','cancelled'],accepted:['preparing','rejected','cancelled'],preparing:['ready'],ready:['completed'],completed:[],rejected:[],cancelled:[]};
+export function assertTransition(from:Status,to:Status){if(!nextStatuses[from].includes(to))throw Error('This order cannot move to that stage. Refresh and try again.');}
+export function totals(items:{unit_price_minor:number;qty:number}[]){if(items.some(i=>!Number.isSafeInteger(i.qty)||i.qty<1||i.qty>99||!Number.isSafeInteger(i.unit_price_minor)||i.unit_price_minor<0))throw Error('Please review item quantities and prices.');const subtotal_minor=items.reduce((s,i)=>s+i.unit_price_minor*i.qty,0);const tax_minor=Math.round(subtotal_minor*0.05);return {subtotal_minor,tax_minor,total_minor:subtotal_minor+tax_minor};}
+export interface CartLine {id:string;merchant_id:string;name:string;price_minor:number;qty:number;image:string;variant_id?:string}
+export function validateCart(lines:CartLine[],menu:MenuItem[]){return lines.flatMap(l=>{const i=menu.find(i=>i.id===l.id);const v=l.variant_id?i?.variants.find(v=>v.id===l.variant_id):undefined;return !i||!i.in_stock?[`${l.name} is sold out. Remove it to continue.`]:l.variant_id&&!v?[`${l.name} option is no longer available.`]:(v?.price_minor??i.price_minor)!==l.price_minor?[`${l.name} has a new price. Review your cart.`]:[];});}
+export function canAdd(lines:CartLine[],merchantId:string){return !lines.length||lines[0].merchant_id===merchantId;}
+export const active=(s:Status)=>!['completed','rejected','cancelled'].includes(s);
