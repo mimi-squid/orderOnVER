@@ -2,7 +2,7 @@ export type Role='customer'|'merchant'|'admin';
 export type Status='received'|'accepted'|'preparing'|'ready'|'completed'|'rejected'|'cancelled';
 export type PaymentStatus='pending'|'paid'|'failed'|'refunded';
 export interface Profile {id:string;name:string;phone:string;email?:string;gender?:string;role:Role}
-export interface Merchant {id:string;owner_id:string;slug:string;name:string;description:string;category:string;building:string;address:string;city:string;state:string;pin:string;campus:string;is_on_campus:boolean;status:'pending'|'approved'|'rejected'|'suspended';accepting_orders:boolean;avg_prep_minutes:number;rush_extra_minutes:number;supports_pickup:boolean;supports_dine_in:boolean;pay_at_counter_enabled:boolean;image:string;hours:string;open_days:string[];tables:Table[]}
+export interface Merchant {gstin?:string;id:string;owner_id:string;slug:string;name:string;description:string;category:string;building:string;address:string;city:string;state:string;pin:string;campus:string;is_on_campus:boolean;status:'pending'|'approved'|'rejected'|'suspended';accepting_orders:boolean;avg_prep_minutes:number;rush_extra_minutes:number;supports_pickup:boolean;supports_dine_in:boolean;pay_at_counter_enabled:boolean;image:string;hours:string;open_days:string[];tables:Table[]}
 export interface Table {id:string;label:string;enabled:boolean;deleted_at?:string}
 export interface MenuItem {id:string;merchant_id:string;name:string;description:string;category:string;price_minor:number;is_veg:boolean;in_stock:boolean;image:string;variants:{id:string;name:string;price_minor:number}[]}
 export interface OrderItem {item_id:string;name:string;unit_price_minor:number;qty:number;variant_id?:string}
